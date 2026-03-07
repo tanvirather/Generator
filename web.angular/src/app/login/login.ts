@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, model, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Components } from '../../components';
 
 @Component({
@@ -9,6 +10,7 @@ import { Components } from '../../components';
   styleUrl: './login.css',
 })
 export class Login {
+  constructor(private router: Router) { }
 
   model = model({
     username: '',
@@ -20,11 +22,12 @@ export class Login {
   value = model<string>('');
 
   onSubmit() {
-    alert(`username = ${this.model().username}, password = ${this.model().password}, rememberMe = ${this.model().rememberMe}`);
+    this.router.navigateByUrl('/table-page');
+    // alert(`username = ${this.model().username}, password = ${this.model().password}, rememberMe = ${this.model().rememberMe}`);
   }
 
   onFirstNameChange(event: string) {
-    alert(`First name changed to: ${JSON.stringify(event)}`);
+    // alert(`First name changed to: ${JSON.stringify(event)}`);
   }
 
   reset() {

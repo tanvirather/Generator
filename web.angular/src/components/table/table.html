@@ -1,0 +1,12 @@
+<table>
+  <thead>
+    <tr>
+      <th *ngFor="let column of columns">{{ column.label }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let data of dataList">
+      <td *ngFor="let column of columns">{{ data[column.key] }}</td>
+    </tr>
+  </tbody>
+</table>
