@@ -8,5 +8,15 @@
     <tr *ngFor="let data of dataList">
       <td *ngFor="let column of columns">{{ data[column.key] }}</td>
     </tr>
+    <tr *ngFor="let row of dataList">
+      <td *ngFor="let col of columns;let i = index;">
+        <ng-container *ngTemplateOutlet="col.template;context: buildCtx(row, i)"></ng-container>
+      </td>
+    </tr>
+
+    <!-- 
+    <tr *ngFor="let data of dataList">
+      <td *ngFor="let column of columns">{{ data[column.key] }}</td>
+    </tr> -->
   </tbody>
 </table>

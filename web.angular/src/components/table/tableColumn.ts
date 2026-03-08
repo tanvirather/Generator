@@ -3,4 +3,5 @@ export interface TableColumn {
   label?: string;
   sortable?: boolean;
   width?: string;
+  template?: any;
 }

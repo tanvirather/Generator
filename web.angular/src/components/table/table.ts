@@ -11,4 +11,11 @@ import { TableColumn } from './tableColumn';
 export class Table {
   @Input() columns: TableColumn[] = [];
   @Input() dataList: any[] = [];
+
+  buildCtx(row: any, index: number) {
+    return {
+      $implicit: row,
+      index: index,
+    };
+  }
 }
