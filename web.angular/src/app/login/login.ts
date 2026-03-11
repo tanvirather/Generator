@@ -8,6 +8,7 @@ import { Components } from '../../components';
   imports: [CommonModule, ...Components],
   templateUrl: './login.html',
   styleUrl: './login.css',
+  standalone: true,
 })
 export class Login {
   constructor(private router: Router) { }
@@ -23,20 +24,22 @@ export class Login {
 
   onSubmit() {
     this.router.navigateByUrl('/table-page');
-    // alert(`username = ${this.model().username}, password = ${this.model().password}, rememberMe = ${this.model().rememberMe}`);
   }
-
-  onFirstNameChange(event: string) {
-    // alert(`First name changed to: ${JSON.stringify(event)}`);
-  }
-
-  reset() {
-    this.model.set({
-      username: '',
-      password: '',
-      rememberMe: false,
-    });
-    this.firstName.set('');
-  }
-
 }
+
+
+// // this.router.navigate(['/', 'table-page']);
+// // alert(`username = ${this.model().username}, password = ${this.model().password}, rememberMe = ${this.model().rememberMe}`);
+
+// onFirstNameChange(event: string) {
+//   // alert(`First name changed to: ${JSON.stringify(event)}`);
+// }
+
+// reset() {
+//   this.model.set({
+//     username: '',
+//     password: '',
+//     rememberMe: false,
+//   });
+//   this.firstName.set('');
+// }

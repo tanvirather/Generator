@@ -8,6 +8,7 @@ import { TableColumn } from '../../components/table/tableColumn';
   imports: [CommonModule, ...Components],
   templateUrl: './table-page.html',
   styleUrl: './table-page.css',
+  standalone: true,
 })
 export class TablePage {
   columns: TableColumn[] = [
