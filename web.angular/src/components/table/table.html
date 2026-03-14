@@ -1,3 +1,5 @@
+<input type="text" placeholder="Search..." [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" />
+
 <table>
   <thead>
     <tr>
@@ -5,7 +7,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let data of dataList">
+    <tr *ngFor="let data of visibleDataList">
       <td *ngFor="let col of columns">
         <ng-container *ngIf="cellTemplates.get(col.key) as cellTpl else defaultCell">
           <ng-container *ngTemplateOutlet="cellTpl, context: {$implicit: data[col.key]}" />
