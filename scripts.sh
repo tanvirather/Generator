@@ -106,18 +106,15 @@ docker start $postgres_container
 # recreate_database "Identity"
 # update_database "Identity"
 # run_test "Base.Tests"
+# publish_docker Identity/Dockerfile identity
 
 # recreate_database "Auth"
 # update_database "Auth"
 # run_test "Auth.Tests"
-
+# publish_docker Product.Job/Dockerfile product.job
 
 # recreate_database "Product"
 # update_database "Product" "Product.Api"
 run_test "Product.Tests"
-
-# publish_docker Identity/Dockerfile identity
 # publish_docker Product.Api/Dockerfile product.api
-# publish_docker Product.Job/Dockerfile product.job
-
 

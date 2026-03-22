@@ -38,6 +38,7 @@
     "Readme.md": true,
     "Template.slnx": true,
     "Web.BlazorWasm": true,
+    "web.angular": true,
     "web.server": true,
     "web.vue": false,
   },
