@@ -7,11 +7,7 @@
 
 <!-------------------------------------------------- template -------------------------------------------------->
 <template>
-  <nav>
-    <router-link to="/dashboard">Dashboard</router-link>
-    <router-link to="/numericType">NumericType</router-link>
-  </nav>
-   <router-view />
+  <h1>Dashboard</h1>
 </template>
 
 <!-------------------------------------------------- style -------------------------------------------------->

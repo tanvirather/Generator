@@ -1,7 +1,7 @@
-column,datatype,required,default,length,precision,unique,fk_schema,fk_table,fk_column
-Id,uuid,1,,,,,,,
-Updated_By_Id,uuid,1,,,,,Identity,Users,Id
-Updated,timestamp,1,CURRENT_TIMESTAMP,,,,,,
-Smallint_Type,smallint,0,,,,,,,
-Integer_Type,integer,0,,,,,,,
-Bigint_Type,bigint,0,,,,,,,
+label,control,column,datatype,required,default,length,precision,unique,fk_schema,fk_table,fk_column
+,,Id,uuid,1,,,,,,,
+,,Updated_By_Id,uuid,1,,,,,Identity,Users,Id
+,,Updated,timestamp,1,CURRENT_TIMESTAMP,,,,,,
+Small Int Type,Number,Smallint_Type,smallint,0,,,,,,,
+Integer Type,Number,Integer_Type,integer,0,,,,,,,
+Big Int_Type,Number,Bigint_Type,bigint,0,,,,,,,

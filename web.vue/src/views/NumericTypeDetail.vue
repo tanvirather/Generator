@@ -1,16 +1,15 @@
 <!-------------------------------------------------- script -------------------------------------------------->
 <script setup>
 import { inject, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { NumericTypeStore } from '../store';
 
 /************************* properties *************************/
 const apiClient = inject('apiClient');
 const route = useRoute()
+const router = useRouter()
+
 const model = ref({
-  // smallintType: null,
-  // integerType: null,
-  // bigintType: null
 });
 /************************* functions *************************/
 
@@ -20,6 +19,7 @@ onMounted(async () => {
 
 const onSubmit = async () => {
   await new NumericTypeStore(apiClient).put(model.value);
+  router.push("/numericType");
 }
 const onReset = async () => {
   await loadData();
@@ -39,10 +39,13 @@ async function loadData() {
 
 <!-------------------------------------------------- template -------------------------------------------------->
 <template>
-  <Card title="Numeric Type" @onSubmit="onSubmit" @onCancel="onReset">
-    <Number label="Smallint Type" type="number" v-model="model.smallintType" />
+  <Card title="NumericType" @onSubmit="onSubmit" @onCancel="onReset">
+    <Number label="Id" type="number" v-model="model.id" />
+    <Number label="UpdatedById" type="number" v-model="model.updatedById" />
+    <Number label="Updated" type="number" v-model="model.updated" />
+    <Number label="Small Int Type" type="number" v-model="model.smallintType" />
     <Number label="Integer Type" type="number" v-model="model.integerType" />
-    <Number label="Bigint Type" type="number" v-model="model.bigintType" />
+    <Number label="Big Int_Type" type="number" v-model="model.bigintType" />
   </Card>
 </template>
 

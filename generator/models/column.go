@@ -4,6 +4,8 @@ import "strings"
 
 // Column represents a row in a column CSV file.
 type Column struct {
+	Label     string `csv:"label"`
+	Control   string `csv:"control"`
 	Column    string `csv:"column"`
 	Datatype  string `csv:"datatype"`
 	Required  string `csv:"required"`

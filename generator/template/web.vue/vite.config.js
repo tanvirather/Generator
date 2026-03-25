@@ -10,8 +10,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Product',
-        short_name: 'Product',
+        name: '[Product]',
+        short_name: '[Product]',
         start_url: '/',
         display: 'standalone',
         background_color: '#ffffff',
