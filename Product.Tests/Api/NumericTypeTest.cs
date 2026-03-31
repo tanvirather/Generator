@@ -1,4 +1,4 @@
-using Zuhid.Product.Entities;
+using Zuhid.Product.Entities.Product;
 
 namespace Zuhid.Product.Tests.Api;
 

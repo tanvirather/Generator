@@ -13,27 +13,27 @@ public class BaseCrudController<TRepository, TMapper, TContext, TEntity, TModel>
     where TModel : class, IEntity, TEntity, new()
 {
 
-  [HttpGet()]
-  public virtual async Task<List<TModel>> Get(Guid id = default)
-  {
-    return await repository.Get(id).ConfigureAwait(false);
-  }
+    [HttpGet()]
+    public virtual async Task<List<TModel>> Get(Guid id = default)
+    {
+        return await repository.Get(id).ConfigureAwait(false);
+    }
 
-  [HttpPost]
-  public virtual async Task<UpdatedModel> Add([FromBody] TModel model)
-  {
-    return await repository.Add(mapper.GetEntity(model)).ConfigureAwait(false);
-  }
+    [HttpPost]
+    public virtual async Task<UpdatedModel> Add([FromBody] TModel model)
+    {
+        return await repository.Add(mapper.GetEntity(model)).ConfigureAwait(false);
+    }
 
-  [HttpPut()]
-  public virtual async Task<UpdatedModel> Update([FromBody] TModel model)
-  {
-    return await repository.Update(mapper.GetEntity(model)).ConfigureAwait(false);
-  }
+    [HttpPut()]
+    public virtual async Task<UpdatedModel> Update([FromBody] TModel model)
+    {
+        return await repository.Update(mapper.GetEntity(model)).ConfigureAwait(false);
+    }
 
-  [HttpDelete()]
-  public virtual async Task Delete(Guid id)
-  {
-    await repository.Delete(id).ConfigureAwait(false);
-  }
+    [HttpDelete()]
+    public virtual async Task Delete(Guid id)
+    {
+        await repository.Delete(id).ConfigureAwait(false);
+    }
 }

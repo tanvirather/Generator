@@ -29,27 +29,9 @@ const computedId = computed(() => props.id || props.label.toLowerCase().replace(
 
 <!-------------------------------------------------- style -------------------------------------------------->
 <style scoped>
-.ctrl {
+/* .ctrl {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-
-  > label {
-    font-weight: 600;
-    font-size: 0.92rem;
-  }
-
-  > input {
-    padding: 8px 10px;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    font-size: 1rem;
-  }
-
-  > input:focus {
-    outline: none;
-    border-color: #6aa0ff;
-    box-shadow: 0 0 0 3px rgba(106, 160, 255, 0.12);
-  }
-}
+  gap: var(--spacing-xs);
+} */
 </style>

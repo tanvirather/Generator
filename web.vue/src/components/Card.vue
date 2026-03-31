@@ -18,7 +18,9 @@ defineEmits(["onSubmit", "onCancel"]);
 <template>
   <div class="card">
     <header>{{ title }}</header>
-    <main class="card-content"><slot /></main>
+    <main class="card-content">
+      <slot />
+    </main>
     <footer class="card-actions">
       <slot name="footer">
         <button id="save-btn" v-if="saveText.length > 0" @click="$emit('onSubmit')">{{ saveText }}</button>
@@ -31,6 +33,32 @@ defineEmits(["onSubmit", "onCancel"]);
 <!-------------------------------------------------- style -------------------------------------------------->
 <style scoped>
 .card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  margin: 5px;
+
+  >* {
+    margin: 5px;
+  }
+
+  header {
+    border-bottom: 1px solid black;
+  }
+
+  footer {
+    align-self: end;
+
+    >* {
+      margin-right: 5px;
+    }
+  }
+}
+
+/* .card {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -49,5 +77,5 @@ defineEmits(["onSubmit", "onCancel"]);
 
 .card footer {
   margin-top: auto;
-}
+} */
 </style>

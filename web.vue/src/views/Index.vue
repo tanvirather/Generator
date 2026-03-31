@@ -1,8 +1,5 @@
 <!-------------------------------------------------- script -------------------------------------------------->
 <script setup>
-/************************* emits *************************/
-/************************* computed *************************/
-/************************* functions *************************/
 </script>
 
 <!-------------------------------------------------- template -------------------------------------------------->
@@ -15,4 +12,24 @@
 </template>
 
 <!-------------------------------------------------- style -------------------------------------------------->
-<style scoped></style>
+<style scoped>
+/* nav {
+  background-color: var(--surface-color);
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+nav a {
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+nav a.router-link-active {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+} */
+</style>

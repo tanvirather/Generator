@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"zuhid.com/generator/tools"
 )
 
 // Template represents a template-based code generator.
@@ -33,6 +35,10 @@ func (t *Template) Generate() {
 
 			// Replace [Product] in directory/file names
 			targetRelPath := strings.ReplaceAll(relPath, "[Product]", t.Product)
+			targetRelPath = strings.ReplaceAll(targetRelPath, "[sln]", "sln")
+			targetRelPath = strings.ReplaceAll(targetRelPath, "[csproj]", "csproj")
+			// log.Printf("targetRelPath: %s", targetRelPath)
+
 			targetPath := filepath.Join(t.OutputPath, targetRelPath)
 
 			// delete targetRelPath
@@ -52,6 +58,9 @@ func (t *Template) Generate() {
 			// Replace [Company] and [Product] placeholders in content
 			newContent := strings.ReplaceAll(string(content), "[Company]", t.Company)
 			newContent = strings.ReplaceAll(newContent, "[Product]", t.Product)
+			newContent = strings.ReplaceAll(newContent, "[product]", tools.LowerFirst(t.Product))
+			newContent = strings.ReplaceAll(newContent, "[sln]", "sln")
+			newContent = strings.ReplaceAll(newContent, "[csproj]", "csproj")
 
 			// Create directory for the target file if it doesn't exist
 			err = os.MkdirAll(filepath.Dir(targetPath), os.ModePerm)

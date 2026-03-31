@@ -17,7 +17,7 @@ type Csharp struct {
 }
 
 // Generate generates C# code based on the provided table data.
-func (csharp *Csharp) Generate(tables []models.Table) error {
+func (csharp *Csharp) Generate(tables []models.Table) {
 	template := Template{
 		Company:    csharp.Company,
 		Product:    csharp.Product,
@@ -30,10 +30,7 @@ func (csharp *Csharp) Generate(tables []models.Table) error {
 	for _, table := range tables {
 		filePath := fmt.Sprintf("%s/%s/%s.csv", csharp.InputPath, table.Schema, table.Table)
 		csv := tools.Csv{}
-		columns, err := csv.ReadColumns(filePath)
-		if err != nil {
-			return err
-		}
+		columns, _ := csv.ReadColumns(filePath)
 
 		_ = csharp.generateEntities(table, columns)
 		_ = csharp.generateModels(table, columns)
@@ -42,13 +39,7 @@ func (csharp *Csharp) Generate(tables []models.Table) error {
 		_ = csharp.generateApiTest(table, columns)
 	}
 
-	err := csharp.generateDbContext(tables)
-	if err != nil {
-		return err
-	}
-
-	// log.Printf("Generating C# code for %d tables...\n", len(tables))
-	return nil
+	_ = csharp.generateDbContext(tables)
 }
 
 // PostgresToCsharpType returns the C# type corresponding to the provided PostgreSQL type.
@@ -162,11 +153,11 @@ func (csharp *Csharp) generateEntities(table models.Table, columns []models.Colu
 	entityName := table.TableCsharp() + "Entity"
 
 	content := fmt.Sprintf(`using Zuhid.Base;
-namespace %s.%s.Entities;
+namespace %s.%s.Entities.%s;
 
 public class %s : IEntity
 {
-`, csharp.Company, csharp.Product, entityName)
+`, csharp.Company, csharp.Product, table.Schema, entityName)
 
 	for _, col := range columns {
 		csharpType := csharp.PostgresToCsharpType(col.Datatype)
@@ -175,7 +166,7 @@ public class %s : IEntity
 
 	content += "}\n"
 
-	directory := fmt.Sprintf("%s/%s/Entities", csharp.OutputPath, csharp.Product)
+	directory := fmt.Sprintf("%s/%s/Entities/%s", csharp.OutputPath, csharp.Product, table.Schema)
 	fileName := fmt.Sprintf("%s.cs", entityName)
 
 	tools.CreateFile(directory, fileName, content)
@@ -187,13 +178,13 @@ func (csharp *Csharp) generateModels(table models.Table, columns []models.Column
 	modelName := table.TableCsharp() + "Model"
 	entityName := table.TableCsharp() + "Entity"
 
-	content := fmt.Sprintf(`using %s.%s.Entities;
+	content := fmt.Sprintf(`using %s.%s.Entities.%s;
 
-namespace %s.%s.Models;
+namespace %s.%s.Models.%s;
 
 public class %s : %s
 {
-`, csharp.Company, csharp.Product, csharp.Company, csharp.Product, modelName, entityName)
+`, csharp.Company, csharp.Product, table.Schema, csharp.Company, csharp.Product, table.Schema, modelName, entityName)
 
 	// for _, col := range columns {
 	// 	csharpType := csharp.PostgresToCsharpType(col.Datatype)
@@ -202,7 +193,7 @@ public class %s : %s
 
 	content += "}\n"
 
-	directory := fmt.Sprintf("%s/%s/Models", csharp.OutputPath, csharp.Product)
+	directory := fmt.Sprintf("%s/%s/Models/%s", csharp.OutputPath, csharp.Product, table.Schema)
 	fileName := fmt.Sprintf("%s.cs", modelName)
 
 	tools.CreateFile(directory, fileName, content)
@@ -216,16 +207,16 @@ func (csharp *Csharp) generateRepositories(table models.Table, columns []models.
 	entityName := table.TableCsharp() + "Entity"
 
 	content := fmt.Sprintf(`using Zuhid.Base;
-using %[1]s.%[2]s.Entities;
-using %[1]s.%[2]s.Models;
+using %[1]s.%[2]s.Entities.%[6]s;
+using %[1]s.%[2]s.Models.%[6]s;
 
-namespace %[1]s.%[2]s.Repositories;
+namespace %[1]s.%[2]s.Repositories.%[6]s;
 
 public class %[3]sRepository(%[2]sContext context) : BaseRepository<%[2]sContext, %[4]s, %[5]s>(context)
 {
     protected override IQueryable<%[5]s> Query => _context.%[3]s.Select(entity => new %[5]s
     {
-`, csharp.Company, csharp.Product, table.TableCsharp(), entityName, modelName)
+`, csharp.Company, csharp.Product, table.TableCsharp(), entityName, modelName, table.SchemaCsharp())
 
 	for _, col := range columns {
 		content += fmt.Sprintf("        %s = entity.%s,\n", col.ColumnCsharp(), col.ColumnCsharp())
@@ -250,20 +241,20 @@ func (csharp *Csharp) generateControllers(table models.Table, columns []models.C
 
 	content := fmt.Sprintf(`using Microsoft.AspNetCore.Components;
 using %[1]s.Base;
-using %[1]s.%[2]s.Entities;
-using %[1]s.%[2]s.Models;
-using %[1]s.%[2]s.Repositories;
+using %[1]s.%[2]s.Entities.%[7]s;
+using %[1]s.%[2]s.Models.%[7]s;
+using %[1]s.%[2]s.Repositories.%[7]s;
 
-namespace %[1]s.%[2]s.Controllers;
+namespace %[1]s.%[2]s.Controllers.%[7]s;
 
-[Route("[controller]")]
+[Route("%[7]s/[controller]")]
 public class %[3]s(%[4]s repository, BaseMapper<%[5]s, %[6]s> mapper)
   : BaseCrudController<%[4]s, BaseMapper<%[5]s, %[6]s>, %[2]sContext, %[5]s, %[6]s>(repository, mapper)
 {
 }
-`, csharp.Company, csharp.Product, controllerName, repositoryName, entityName, modelName)
+`, csharp.Company, csharp.Product, controllerName, repositoryName, entityName, modelName, table.SchemaCsharp())
 
-	directory := fmt.Sprintf("%s/%s/Controllers", csharp.OutputPath, csharp.Product)
+	directory := fmt.Sprintf("%s/%s/Controllers/%s", csharp.OutputPath, csharp.Product, table.SchemaCsharp())
 	fileName := fmt.Sprintf("%s.cs", controllerName)
 	tools.CreateFile(directory, fileName, content)
 

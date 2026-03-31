@@ -1,42 +1,58 @@
 <script setup>
-import { computed } from "vue";
-
 /************************************************** Props **************************************************/
 const props = defineProps({
-  id: { type: String, default: "" },
-  label: { type: String, default: "" },
-  disabled: { type: Boolean, default: false },
+  title: { type: String, default: "" },
+  saveText: { type: String, default: 'Save' },
 });
 
 /************************************************** Emits **************************************************/
-defineEmits(["click"]);
+defineEmits(["onSubmit"]);
 
 /************************************************** Computed **************************************************/
-const computedId = computed(() => props.id || props.label.toLowerCase().replace(/\s+/g, "_"));
 
 /************************************************** functions **************************************************/
+const displayHeader = () => props.title.length > 0;
+const displayFooter = () => props.saveText.length > 0;
+
 </script>
 
 <!-------------------------------------------------- template -------------------------------------------------->
 <template>
-  <div class="ctrl">
-    <button :id="computedId" :disabled="disabled" @click="$emit('click', $event)">{{ label }}</button>
+  <div class="page">
+    <header v-if="displayHeader()">{{ title }}</header>
+    <main>
+      <slot />
+    </main>
+    <footer v-if="displayFooter()">
+      <slot name="footer">
+        <button id="save-btn" v-if="saveText.length > 0" @click="$emit('onSubmit')">{{ saveText }}</button>
+      </slot>
+    </footer>
   </div>
 </template>
 
 <!-------------------------------------------------- style -------------------------------------------------->
 <style scoped>
-/* .ctrl {
+.page {
   display: flex;
   flex-direction: column;
-}
+  height: 100%;
 
-button {
-  background-color: var(--primary-color);
-  color: var(--text-on-primary);
-}
+  /* * {
+    border: 1px solid red;
+  } */
 
-button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-} */
+  header {
+    height: 25px;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  footer {
+    height: 25px;
+  }
+}
 </style>

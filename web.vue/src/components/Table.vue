@@ -1,5 +1,4 @@
 ﻿<script setup>
-import { computed } from "vue";
 
 /************************************************** Props **************************************************/
 const props = defineProps({
@@ -66,52 +65,40 @@ function onAdd() {
 
 <!-------------------------------------------------- style -------------------------------------------------->
 <style scoped>
-.table-container {
+/* .table-container {
   overflow-x: auto;
-}
-
-.simple-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.simple-table th,
-.simple-table td {
-  padding: 8px;
-  border: 1px solid #d0d0d0;
-  text-align: left;
-}
-
-.simple-table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
-
-.simple-table tr:hover {
-  background-color: #f9f9f9;
-}
-
-.action-btn {
-  padding: 4px 8px;
-  cursor: pointer;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .table-actions {
-  margin-bottom: 10px;
+  padding: var(--spacing-md);
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .add-btn {
-  padding: 6px 12px;
-  background-color: #4caf50;
+  background-color: var(--success-color);
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .add-btn:hover {
-  background-color: #45a049;
+  background-color: var(--success-hover);
 }
+
+.action-btn {
+  padding: 4px 12px;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.action-btn:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+} */
 </style>

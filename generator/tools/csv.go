@@ -12,8 +12,8 @@ import (
 type Csv struct{}
 
 // ReadTables reads a Csv file and returns a slice of Table.
-func (c *Csv) ReadTables(filePath string) ([]models.Table, error) {
-	file, err := os.Open(filePath)
+func (c *Csv) ReadTables(fileName string) ([]models.Table, error) {
+	file, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
@@ -23,11 +23,6 @@ func (c *Csv) ReadTables(filePath string) ([]models.Table, error) {
 	if err := gocsv.UnmarshalFile(file, &entries); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal csv: %w", err)
 	}
-
-// 	for i := range entries {
-// 		entries[i].SchemaClean = entries[i].GetSchemaClean()
-// 	}
-
 	return entries, nil
 }
 

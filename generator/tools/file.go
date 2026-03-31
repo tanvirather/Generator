@@ -11,7 +11,7 @@ func CreateFile(directory string, filePath string, content string) {
 	if e != nil {
 		fmt.Println(e)
 	}
-	e = os.Chmod(directory+"/"+filePath, 0755)
+	e = os.Chmod(directory+"/"+filePath, 0766)
 	if e != nil {
 		fmt.Println(e)
 	}

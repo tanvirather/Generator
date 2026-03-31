@@ -2,6 +2,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Page from '../components/Page.vue';
 
 const router = useRouter()
 const model = ref({
@@ -19,10 +20,12 @@ async function login() {
 
 <!-------------------------------------------------- template -------------------------------------------------->
 <template>
-  <Card title="Login" saveText="Login" cancelText="" @onSubmit="login">
-    <Input label="Username" v-model="model.username" />
-    <Password label="Password" v-model="model.password" />
-  </Card>
+  <Page saveText="">
+    <Card title="Login" saveText="Login" cancelText="" @onSubmit="login">
+      <Input label="Username" v-model="model.username" />
+      <Password label="Password" v-model="model.password" />
+    </Card>
+  </Page>
 </template>
 
 <!-------------------------------------------------- style -------------------------------------------------->

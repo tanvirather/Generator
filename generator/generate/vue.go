@@ -36,14 +36,16 @@ func (vue *Vue) Generate(tables []models.Table) error {
 			return err
 		}
 
-	_ = vue.generateSummary(table, columns)
-	_ = vue.generateDetail(table, columns)
+		vue.generateSummary(table, columns)
+		vue.generateDetail(table, columns)
 	}
+	vue.generateRouter(tables)
+	vue.generateNavigation(tables)
 
 	return nil
 }
 
-func (vue *Vue) generateSummary(table models.Table, columns []models.Column) error {
+func (vue *Vue) generateSummary(table models.Table, columns []models.Column) {
 	headers := ""
 	for _, column := range columns {
 		label := column.Label
@@ -99,17 +101,17 @@ async function onDelete(item) {
 <!-------------------------------------------------- style -------------------------------------------------->
 <style scoped></style>
 `,
-	"`",
+		"`",
 		vue.TableJs(table.Table),
 		vue.TableJsLower(table.Table),
 		headers,
 	)
 
 	filePath := filepath.Join(vue.OutputPath, "web.vue", "src", "views", fmt.Sprintf("%sSummary.vue", vue.TableJs(table.Table)))
-	return os.WriteFile(filePath, []byte(content), 0644)
+	_ = os.WriteFile(filePath, []byte(content), 0644)
 }
 
-func (vue *Vue) generateDetail(table models.Table, columns []models.Column) error {
+func (vue *Vue) generateDetail(table models.Table, columns []models.Column) {
 	fields := ""
 	for _, column := range columns {
 		label := column.Label
@@ -172,7 +174,75 @@ async function loadData() {
 		fields)
 
 	filePath := filepath.Join(vue.OutputPath, "web.vue", "src", "views", fmt.Sprintf("%sDetail.vue", vue.TableJs(table.Table)))
-	return os.WriteFile(filePath, []byte(content), 0644)
+	_ = os.WriteFile(filePath, []byte(content), 0644)
+}
+
+func (vue *Vue) generateRouter(tables []models.Table) {
+	routes := ""
+	for _, table := range tables {
+		routes += fmt.Sprintf("        { path: '%s', component: () => import('../views/%sSummary.vue') },\n", vue.TableJsLower(table.Table), vue.TableJs(table.Table))
+		routes += fmt.Sprintf("        { path: '%s/:id', component: () => import('../views/%sDetail.vue') },\n", vue.TableJsLower(table.Table), vue.TableJs(table.Table))
+	}
+
+	content := fmt.Sprintf(`import { createRouter, createWebHistory } from 'vue-router';
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    { path: '/login', component: () => import('../views/Login.vue') },
+    {
+      path: '/', component: () => import('../views/Index.vue'), meta: { requiresAuth: true },
+      children: [
+        { path: 'dashboard', component: () => import('../views/Dashboard.vue') },
+%s        { path: '', redirect: 'dashboard' }
+      ]
+    },
+    { path: '/:pathMatch(.*)*', redirect: '/' } // Catch-all route (must be LAST)
+  ],
+})
+
+router.beforeEach((to, from, next) => {
+  // const isAuthenticated = !!localStorage.getItem('authToken')
+  const isAuthenticated = true
+  const requiresAuth = to.meta.requiresAuth
+  if (requiresAuth && !isAuthenticated) {
+    next('/login')
+  } else {
+    next()
+  }
+})
+
+export default router
+`, routes)
+
+	directory := filepath.Join(vue.OutputPath, "web.vue", "src", "router")
+	tools.CreateFile(directory, "index.js", content)
+}
+
+func (vue *Vue) generateNavigation(tables []models.Table) {
+	navigation := ""
+	for _, table := range tables {
+		navigation += fmt.Sprintf("    <router-link to=\"/%s\">%s</router-link>\n", vue.TableJsLower(table.Table), vue.TableJs(table.Table))
+	}
+
+	content := fmt.Sprintf(`<!-------------------------------------------------- script -------------------------------------------------->
+<script setup>
+</script>
+
+<!-------------------------------------------------- template -------------------------------------------------->
+<template>
+  <nav>
+    <router-link to="/dashboard">Dashboard</router-link>
+%s  </nav>
+   <router-view />
+</template>
+
+<!-------------------------------------------------- style -------------------------------------------------->
+<style scoped></style>
+`, navigation)
+
+	filePath := filepath.Join(vue.OutputPath, "web.vue", "src", "views", "Index.vue")
+	_ = os.WriteFile(filePath, []byte(content), 0644)
 }
 
 func (vue *Vue) TableJs(table string) string {
