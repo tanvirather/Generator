@@ -1,4 +1,4 @@
-﻿namespace Zuhid.Generator.Tools;
+namespace Zuhid.Generator.Tools;
 
 public static class PostgresTypeConverter
 {

@@ -1,5 +1,5 @@
 using System.Reflection;
-using [Company].Base;
+using Zuhid.Base;
 
 namespace [Company].[Product].Api;
 

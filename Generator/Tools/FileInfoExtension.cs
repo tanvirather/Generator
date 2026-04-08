@@ -7,4 +7,11 @@ public static class FileInfoExtension
         fileInfo.Directory?.Create();
         File.WriteAllText(fileInfo.FullName, content);
     }
+
+    public static void CopyToWithDirectory(this FileInfo fileInfo, string destinationPath)
+    {
+        var destFileInfo = new FileInfo(destinationPath);
+        destFileInfo.Directory?.Create();
+        fileInfo.CopyTo(destinationPath, true);
+    }
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.TestHost;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using [Company].Base;
+using Zuhid.Base;
 // using Microsoft.Extensions.DependencyInjection;
 
 namespace [Company].[Product].Tests.Api;
@@ -14,7 +14,7 @@ public class BaseApiTest
 
     static BaseApiTest()
     {
-        var factory = new WebApplicationFactory<Zuhid.Product.Api.Program>();
+        var factory = new WebApplicationFactory<[Company].[Product].Api.Program>();
         factory.WithWebHostBuilder(static builder =>
           // ConfigureTestServices
           builder.ConfigureTestServices(static services =>

@@ -12,7 +12,7 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
         foreach (var table in tableList)
         {
             var csvPathColumn = Path.Combine(settingModel.InputPath, table.Schema, $"{table.Table}.csv");
-            var columns = CsvLoader.LoadColumns(csvPathColumn, table.BaseSchema, table.BaseTable);
+            var columns = CsvLoader.LoadColumns(settingModel.InputPath, csvPathColumn, table.BaseSchema, table.BaseTable);
             GenerateTable(table, columns);
             GenerateForeignKeys(table, columns);
         }

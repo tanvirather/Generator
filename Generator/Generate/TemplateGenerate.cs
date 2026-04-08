@@ -18,13 +18,13 @@ public class TemplateGenerate(SettingModel settingModel) : IGenerate
                 .Replace("[Company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[Product]", settingModel.Product, StringComparison.InvariantCulture)
-                .Replace("[product]", settingModel.Product, StringComparison.InvariantCulture)
+                .Replace("[product]", settingModel.Product.ToLower(), StringComparison.InvariantCulture)
                 .Replace("[csproj]", "csproj");
             var fileContent = File.ReadAllText(templatePath)
                 .Replace("[Company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[Product]", settingModel.Product, StringComparison.InvariantCulture)
-                .Replace("[product]", settingModel.Product, StringComparison.InvariantCulture);
+                .Replace("[product]", settingModel.Product.ToLower(), StringComparison.InvariantCulture);
             new FileInfo(fileName).WriteAllText(fileContent);
         }
     }
