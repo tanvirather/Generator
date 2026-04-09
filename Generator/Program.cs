@@ -8,6 +8,7 @@ class Program
         var setting = new SettingModel(args[0], args[1], args[2], args[3]);
         new TemplateGenerate(setting).Generate();
         new PostgresGenerate(setting).Generate();
+        new CsharpGenerate(setting).Generate();
         new CsharpListGenerate(setting).Generate();
         new CsharpConfigGenerate(setting).Generate();
     }

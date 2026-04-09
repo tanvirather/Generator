@@ -16,7 +16,6 @@ public class CsharpConfigGenerate(SettingModel setting) : IGenerate
             GenerateEntities(table, columns);
             GenerateModels(table, columns);
             GenerateRepositories(table, columns);
-            GenerateContext(table, columns);
             GenerateControllers(table, columns);
         }
     }
@@ -103,57 +102,6 @@ public class {repositoryName}({product}Context context) : {table.BaseTable}Repos
         var fileName = $"{repositoryName}.cs";
         var fileInfo = new FileInfo(Path.Combine(directory, fileName));
         fileInfo.WriteAllText(content);
-    }
-
-    private void GenerateContext(TableModel table, List<ColumnModel> columns)
-    {
-        var company = setting.Company;
-        var product = setting.Product;
-        var schema = table.Schema;
-        var entityName = table.Table + "Entity";
-        var tableName = table.Table;
-
-        var content = $"""
-using Microsoft.EntityFrameworkCore;
-using {company}.{product}.Entities.{schema};
-using Zuhid.Base;
-
-namespace {company}.{product};
-
-public partial class {product}Context(DbContextOptions<{product}Context> options) : DbContext(options)
-{"{"}
-    public virtual DbSet<{entityName}> {tableName} {"{"} get; set; {"}"} = null!;
-
-    protected override void OnModelCreating(ModelBuilder builder)
-    {"{"}
-        base.OnModelCreating(builder);
-        builder.ToSnakeCase("{setting.Product.ToLower()}");
-        var basePath = "../{setting.Product}/Dataload";{GenerateContext_LoadCsvData()}
-    {"}"}
-{"}"}
-
-""";
-        var directory = Path.Combine(setting.OutputPath, setting.Product);
-        var fileName = $"{setting.Product}Context.cs";
-        var fileInfo = new FileInfo(Path.Combine(directory, fileName));
-        fileInfo.WriteAllText(content);
-    }
-
-    private string GenerateContext_LoadCsvData()
-    {
-        var loadDataContent = "";
-        var tableList = CsvLoader.LoadTables(Path.Combine(setting.InputPath, "Table.csv"));
-        foreach (var table in tableList)
-        {
-            var csvPathData = Path.Combine(setting.InputPath, "Dataload", table.Schema, $"{table.Table}.csv");
-            if (File.Exists(csvPathData))
-            {
-                loadDataContent += $"\n        builder.LoadCsvData<{table.Table}Entity>($\"{{basePath}}/{table.Schema}/{table.Table}.csv\");";
-                var outputPath = Path.Combine(setting.OutputPath, setting.Product, "Dataload", table.Schema, $"{table.Table}.csv");
-                new FileInfo(csvPathData).CopyToWithDirectory(outputPath);
-            }
-        }
-        return loadDataContent;
     }
 
     private void GenerateControllers(TableModel table, List<ColumnModel> columns)
