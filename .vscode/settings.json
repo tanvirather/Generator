@@ -14,7 +14,6 @@
   },
   "files.exclude": {
     ".editorconfig": true,
-    ".gitignore": true,
     ".idea": true,
     "*.csproj": true,
     "*.slnx": true,
@@ -27,7 +26,6 @@
   },
   "files.watcherExclude": {
     ".editorconfig": true,
-    ".gitignore": true,
     ".idea": true,
     "*.csproj": true,
     "*.slnx": true,
@@ -40,7 +38,6 @@
   },
   "search.exclude": {
     ".editorconfig": true,
-    ".gitignore": true,
     ".idea": true,
     "*.csproj": true,
     "*.slnx": true,

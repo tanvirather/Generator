@@ -31,11 +31,14 @@ public static class PostgresTypeConverter
             "xml" => "string",
             _ => "object"
         };
-
-        if (!required && type != "string" && type != "byte[]" && type != "object")
+        if(type == "string")
         {
-            type += "?";
+            type = required ? "required string" : "string?";
         }
+        // if (!required && type != "string" && type != "byte[]" && type != "object")
+        // {
+        //     type += "?";
+        // }
 
         return type;
     }

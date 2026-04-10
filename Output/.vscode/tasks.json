@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Api",
+      "type": "shell",
+      "command": "dotnet build Api",
+      "group": "build"
+    },
+    {
+      "label": "Ops135",
+      "type": "shell",
+      "command": "dotnet build Ops135",
+      "group": "build"
+    }
+  ]
+}

@@ -33,6 +33,12 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
     private void GenerateTable(TableModel table, List<ColumnModel> columns)
     {
         var filePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.sql");
+        var sql = GetTableSql(table, columns);
+        new FileInfo(filePath).WriteAllText(sql);
+    }
+
+    internal string GetTableSql(TableModel table, List<ColumnModel> columns)
+    {
         var columnDefinitions = columns.Select(column =>
         {
             var definition = $"    {column.Column.ToSnakeCase()} {column.Datatype}";
@@ -63,12 +69,22 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
         });
 
         var sql = $"create table if not exists {table.Schema.ToSnakeCase()}.{table.Table.ToSnakeCase()} (\n{string.Join(",\n", columnDefinitions)}\n);\n";
-        new FileInfo(filePath).WriteAllText(sql);
+        return sql;
     }
 
     private void GenerateForeignKeys(TableModel table, List<ColumnModel> columns)
     {
         var filePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.fk.sql");
+        var sql = GetForeignKeysSql(table, columns);
+
+        if (!string.IsNullOrWhiteSpace(sql))
+        {
+            new FileInfo(filePath).WriteAllText(sql);
+        }
+    }
+
+    internal string GetForeignKeysSql(TableModel table, List<ColumnModel> columns)
+    {
         var fkStatements = columns
             .Where(column => !string.IsNullOrWhiteSpace(column.FkSchema) && !string.IsNullOrWhiteSpace(column.FkTable) && !string.IsNullOrWhiteSpace(column.FkColumn))
             .Select(column =>
@@ -81,10 +97,7 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
                 return statement;
             }).ToList();
 
-        if (fkStatements.Count != 0)
-        {
-            new FileInfo(filePath).WriteAllText(string.Join("\n", fkStatements) + "\n");
-        }
+        return fkStatements.Count != 0 ? string.Join("\n", fkStatements) + "\n" : string.Empty;
     }
 }
 

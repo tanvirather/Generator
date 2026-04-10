@@ -29,16 +29,17 @@ public class CsharpConfigGenerate(SettingModel setting) : IGenerate
 
         var content = $"""
 using Zuhid.Base;
+
 namespace {company}.{product}.Entities.{schema};
 
-public class {entityName} : {table.BaseTable}Entity
+public class {entityName} : BaseEntity
 {"{"}
 """;
 
         foreach (var col in columns)
         {
             var csharpType = PostgresTypeConverter.ToCsharpType(col.Datatype, col.Required);
-            content += $"\n  public {csharpType} {col.Column} {"{"} get; set; {"}"}";
+            content += $"\n    public {csharpType} {col.Column} {"{"} get; set; {"}"}";
         }
 
         content += "\n}\n";
@@ -57,17 +58,16 @@ public class {entityName} : {table.BaseTable}Entity
         var schema = table.Schema;
 
         var content = $"""
-using Zuhid.Base;
+using {company}.{product}.Entities.{schema};
 namespace {company}.{product}.Models.{schema};
 
-public class {modelName} : {table.BaseTable}Model
+public class {modelName} : {table.Table}Entity
 {"{"}
 """;
 
-        foreach (var col in columns)
+        foreach (var col in columns.Where(c => !string.IsNullOrWhiteSpace(c.FkSchema)))
         {
-            var csharpType = PostgresTypeConverter.ToCsharpType(col.Datatype, col.Required);
-            content += $"\n  public {csharpType} {col.Column} {"{"} get; set; {"}"}";
+            content += $"\n    public string? {col.Column.Replace("Id", "Text")} {"{"} get; set; {"}"}";
         }
 
         content += "\n}\n";
@@ -123,6 +123,8 @@ namespace {company}.{product}.Controllers.{schema};
 
 public class {controllerName}({table.Table}Repository repository) : {table.BaseTable}Controller<{product}Context, {entityName}>(repository)
 {"{"}
+    [NonAction]
+    public override Task Delete(Guid id) => throw new NotImplementedException("");
 {"}"}
 
 """;

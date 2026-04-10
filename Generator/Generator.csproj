@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Zuhid.Generator.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Template\**\*.cs" />
     <Compile Remove="Output\**\*.cs" />
   </ItemGroup>

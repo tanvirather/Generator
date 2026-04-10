@@ -1,0 +1,11 @@
+.git
+.idea
+.vs
+bin
+Migrations
+node_modules
+node_modules
+obj
+package-lock.json
+TestResults
+tmp

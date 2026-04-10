@@ -19,7 +19,9 @@ public class TemplateGenerate(SettingModel settingModel) : IGenerate
                 .Replace("[company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[Product]", settingModel.Product, StringComparison.InvariantCulture)
                 .Replace("[product]", settingModel.Product.ToLower(), StringComparison.InvariantCulture)
-                .Replace("[csproj]", "csproj");
+                .Replace("[slnx]", "slnx")
+                .Replace("[csproj]", "csproj")
+                ;
             var fileContent = File.ReadAllText(templatePath)
                 .Replace("[Company]", settingModel.Company, StringComparison.InvariantCulture)
                 .Replace("[company]", settingModel.Company, StringComparison.InvariantCulture)
