@@ -1,5 +1,0 @@
-<Solution>
-  <Project Path="MyProduct.Api/MyProduct.Api.csproj" />
-  <Project Path="MyProduct.Tests/MyProduct.Tests.csproj" />
-  <Project Path="MyProduct/MyProduct.csproj" />
-</Solution>

@@ -1,6 +1,0 @@
-Label,Control,Column,Datatype,Required,Default,Length,Precision,Unique,FkSchema,FkTable,FkColumn
-,,Id,int,true,,,,,,,
-,,UpdatedById,uuid,true,,,,,Identity,Users,Id
-,,Updated,timestamp,true,current_timestamp,,,,,,
-,,SortOrder,int,,,,,,,,
-,,Text,varchar,,,50,,,,,

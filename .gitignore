@@ -1,5 +1,7 @@
 .git
 .idea
+*.user
 bin
 obj
 run.sh
+TestResults

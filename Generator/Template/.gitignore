@@ -1,6 +1,7 @@
 .git
 .idea
 .vs
+*.user
 bin
 Migrations
 node_modules

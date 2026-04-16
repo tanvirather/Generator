@@ -29,12 +29,12 @@ public class BaseApiTest
 
         // Get: Act and Assert
         var response = await Client.GetAsync(url);
+        Assert.True(response.IsSuccessStatusCode, $"GET {url} failed with status code {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
         await response.Content.ReadFromJsonAsync<List<TModel>>();
-        Assert.True(response.IsSuccessStatusCode);
 
         // Add: Act and Assert
         response = await Client.PostAsync(url, new StringContent(JsonSerializer.Serialize(addModel), Encoding.UTF8, "application/json"));
-        Assert.True(response.IsSuccessStatusCode);
+        Assert.True(response.IsSuccessStatusCode, $"POST {url} failed with status code {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
         response = await Client.GetAsync($"{url}?Id={addModel.Id}");
         var responseList = await response.Content.ReadFromJsonAsync<List<TModel>>();
         Assert.Equal(1, responseList?.Count);
@@ -42,7 +42,7 @@ public class BaseApiTest
 
         // Update: Act and Assert
         response = await Client.PutAsync(url, new StringContent(JsonSerializer.Serialize(updateModel), Encoding.UTF8, "application/json"));
-        Assert.True(response.IsSuccessStatusCode);
+        Assert.True(response.IsSuccessStatusCode, $"PUT {url} failed with status code {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
         response = await Client.GetAsync($"{url}?Id={addModel.Id}");
         responseList = await response.Content.ReadFromJsonAsync<List<TModel>>();
         Assert.Equal(1, responseList?.Count);
@@ -52,7 +52,7 @@ public class BaseApiTest
         if (allowDelete)
         {
             response = await Client.DeleteAsync($"{url}?Id={addModel.Id}");
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.True(response.IsSuccessStatusCode, $"DELETE {url} failed with status code {response.StatusCode}");
             response = await Client.GetAsync($"{url}?Id={addModel.Id}");
             responseList = await response.Content.ReadFromJsonAsync<List<TModel>>();
             Assert.Equal(0, responseList?.Count);

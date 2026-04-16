@@ -13,6 +13,13 @@ public static class StringExtension
     public static string ToPascalCase(this string str)
     {
         return string.Concat(str.Split('_', StringSplitOptions.RemoveEmptyEntries)
-            .Select(s => char.ToUpper(s[0]) + s[1..].ToLower()));
+            .Select(s => char.ToUpper(s[0]) + s[1..]));
     }
+
+    public static string ToCamelCase(this string str)
+    {
+        return string.Concat(str.Split('_', StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => char.ToLower(s[0]) + s[1..]));
+    }
+
 }

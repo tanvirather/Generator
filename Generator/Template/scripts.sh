@@ -9,7 +9,6 @@ dbuser_user="dbuser"
 dbuser_password="P@ssw0rd"
 
 ################################################## functions ##################################################
-
 rebuild_postgres_server(){
   # remove the image
   docker container rm "$postgres_container" --force
@@ -24,13 +23,6 @@ rebuild_postgres_server(){
   docker exec -it $postgres_container psql -U $postgres_user -c "create user dbuser with superuser password 'P@ssw0rd';"
 }
 
-solution_initilize(){
-  dotnet tool restore
-  dotnet user-secrets set "postgres_credential" "User Id=$dbuser_user;Password=$dbuser_password" --project [Product].Api # set secrets
-  dotnet user-secrets set "AppSettings:Cosmos:Key" "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" --project [Product].Api # set secrets
-  npm -C Web.Vue install
-}
-
 # This script updates all outdated NuGet packages in .NET projects within the current directory.
 update_dotnet_packages() {
   find . -name "*.csproj" | sort | while read csproj; do
@@ -43,6 +35,24 @@ update_dotnet_packages() {
   done
   # dotnet list package --outdated
   # dotnet tool update --all # Update all tools
+}
+
+scaffold_database(){
+  project=$1
+  startup_project=$2 
+  # get the database in lower case
+  dbname=${1,,}
+
+  dotnet ef dbcontext scaffold --project $project --startup-project $startup_project --output-dir Scaffold/Models --context-dir Scaffold --force \
+      --data-annotations --no-onconfiguring \
+      "Host=localhost;Database=$dbname;Username=$dbuser_user;Password=$dbuser_password" Npgsql.EntityFrameworkCore.PostgreSQL
+}
+
+solution_initilize(){
+  dotnet tool restore
+  dotnet user-secrets set "postgres_credential" "User Id=$dbuser_user;Password=$dbuser_password" --project [Product].Api # set secrets
+  dotnet user-secrets set "AppSettings:Cosmos:Key" "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" --project [Product].Api # set secrets
+  npm -C Web.Vue install
 }
 
 recreate_database(){
@@ -98,10 +108,11 @@ publish_docker() {
 
 ################################################## execute ##################################################
 clear
-# docker start $postgres_container
 # rebuild_postgres_server
-# solution_initilize
 # update_dotnet_packages
+# scaffold_database "[Product]" "[Product].Api"
+# solution_initilize
+# docker start $postgres_container
 
 # recreate_database "[Product]"
 update_database "[Product]" "[Product].Api"

@@ -31,7 +31,7 @@ public static class PostgresTypeConverter
             "xml" => "string",
             _ => "object"
         };
-        if(type == "string")
+        if (type == "string")
         {
             type = required ? "required string" : "string?";
         }

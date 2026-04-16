@@ -3,135 +3,135 @@ using Zuhid.Generator.Tools;
 
 namespace Zuhid.Generator.Generate;
 
-public class CsharpConfigGenerate(SettingModel setting) : IGenerate
+public class CsharpConfigGenerate(SettingModel setting, IFileService fileService) : IGenerate
 {
     public void Generate()
     {
-        var tableList = CsvLoader.LoadTables(Path.Combine(setting.InputPath, "Table.csv"));
-        // string[] excludeList = ["List", "Config"];
+        var tableList = fileService.LoadTables(Path.Combine(setting.InputPath, "Table.csv"));
         foreach (var table in tableList.Where(t => t.BaseSchema == "Config"))
         {
             var csvPathColumn = Path.Combine(setting.InputPath, table.Schema, $"{table.Table}.csv");
-            var columns = CsvLoader.LoadColumns(setting.InputPath, csvPathColumn);
-            GenerateEntities(table, columns);
-            GenerateModels(table, columns);
-            GenerateRepositories(table, columns);
-            GenerateControllers(table, columns);
+            var columns = fileService.LoadColumns(setting.InputPath, csvPathColumn);
+            var columnsWithBase = fileService.LoadColumns(setting.InputPath, csvPathColumn, table.BaseSchema, table.BaseTable);
+
+            fileService.WriteAllText(GenerateEntities(table, columns, columnsWithBase, tableList));
+            fileService.WriteAllText(GenerateModels(table, columns));
+            fileService.WriteAllText(GenerateRepositories(table, columnsWithBase));
+            fileService.WriteAllText(GenerateControllers(table));
         }
     }
 
-    private void GenerateEntities(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateEntities(TableModel table, List<ColumnModel> columns,  List<ColumnModel> columnsWithBase, List<TableModel> allTables)
     {
-        var entityName = table.Table + "Entity";
-        var company = setting.Company;
-        var product = setting.Product;
-        var schema = table.Schema;
+        var hasEnum = columns.Any(t => t.FkSchema == "List");
+        var navigationNamespaces = columns
+            .Where(col => !string.IsNullOrWhiteSpace(col.FkTable) && !string.IsNullOrWhiteSpace(col.FkSchema) && col.FkSchema != table.Schema)
+            .Select(col => col.FkSchema)
+            .Distinct()
+            .Select(fkSchema => $"using {setting.Company}.{setting.Product}.Entities.{fkSchema};")
+            .Append($"using Zuhid.Base;")
+            .Append($"using System.ComponentModel.DataAnnotations.Schema;")
+            .Order()
+            .ToList();
+        if(columns.Any(t => t.FkSchema == "List"))
+        {
+            navigationNamespaces.Insert(0, $"using {setting.Company}.{setting.Product}.Enums.List;");
+        }
 
         var content = $"""
-using Zuhid.Base;
+{string.Join("\n", navigationNamespaces)}
 
-namespace {company}.{product}.Entities.{schema};
+namespace {setting.Company}.{setting.Product}.Entities.{table.Schema};
 
-public class {entityName} : BaseEntity
+public class {table.Table}Entity : BaseEntity
 {"{"}
 """;
 
         foreach (var col in columns)
         {
-            var csharpType = PostgresTypeConverter.ToCsharpType(col.Datatype, col.Required);
+            var isFk = !string.IsNullOrWhiteSpace(col.FkTable);
+            // var fkTable = allTables.FirstOrDefault(t => t.Table == col.FkTable && t.Schema == col.FkSchema);
+            var csharpType = col.FkSchema == "List" ? $"{col.FkTable}Enum{(col.Required ? "" : "?")}" : PostgresTypeConverter.ToCsharpType(col.Datatype, col.Required);
+            if (isFk)
+            {
+                content += $"\n    [ForeignKey(nameof({col.FkTable}))]";
+            }
             content += $"\n    public {csharpType} {col.Column} {"{"} get; set; {"}"}";
+
+            if (isFk)
+            {
+                content += $"\n    public virtual {col.FkTable}Entity{(col.Required ? "" : "?")} {col.FkTable} {"{"} get; set; {"}"}{(col.Required ? "" : " = null!;")}";
+            }
         }
-
         content += "\n}\n";
-
-        var directory = Path.Combine(setting.OutputPath, setting.Product, "Entities", schema);
-        var fileName = $"{entityName}.cs";
-        var fileInfo = new FileInfo(Path.Combine(directory, fileName));
-        fileInfo.WriteAllText(content);
+        return new FileModel { FilePath = Path.Combine(setting.OutputPath, setting.Product, "Entities", table.Schema, $"{table.Table}Entity.cs"), Content = content };
     }
 
-    private void GenerateModels(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateModels(TableModel table, List<ColumnModel> columns)
     {
-        var modelName = table.Table + "Model";
-        var company = setting.Company;
-        var product = setting.Product;
-        var schema = table.Schema;
-
         var content = $"""
-using {company}.{product}.Entities.{schema};
-namespace {company}.{product}.Models.{schema};
+using {setting.Company}.{setting.Product}.Entities.{table.Schema};
+namespace {setting.Company}.{setting.Product}.Models.{table.Schema};
 
-public class {modelName} : {table.Table}Entity
+public class {table.Table}Model : {table.Table}Entity
 {"{"}
 """;
-
         foreach (var col in columns.Where(c => !string.IsNullOrWhiteSpace(c.FkSchema)))
         {
             content += $"\n    public string? {col.Column.Replace("Id", "Text")} {"{"} get; set; {"}"}";
         }
-
         content += "\n}\n";
-
-        var directory = Path.Combine(setting.OutputPath, setting.Product, "Models", schema);
-        var fileName = $"{modelName}.cs";
-        var fileInfo = new FileInfo(Path.Combine(directory, fileName));
-        fileInfo.WriteAllText(content);
+        return new FileModel { FilePath = Path.Combine(setting.OutputPath, setting.Product, "Models", table.Schema, $"{table.Table}Model.cs"), Content = content };
     }
 
-    private void GenerateRepositories(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateRepositories(TableModel table, List<ColumnModel> columns)
     {
-        var repositoryName = table.Table + "Repository";
-        var entityName = table.Table + "Entity";
-        var company = setting.Company;
-        var product = setting.Product;
-        var schema = table.Schema;
+        var variableName = table.Table.ToCamelCase();
+        var mappings = columns.Select(col => $"        {col.Column} = {variableName}.{col.Column}").ToList();
+        mappings.AddRange(columns.Where(c => !string.IsNullOrWhiteSpace(c.FkTable)).Select(col => $"        {col.Column.Replace("Id", "Text")} = {variableName}.{col.FkTable}.Text"));
 
         var content = $"""
 using Zuhid.Base;
-using {company}.{product}.Entities.{schema};
+using {setting.Company}.{setting.Product}.Entities.{table.Schema};
+using {setting.Company}.{setting.Product}.Models.{table.Schema};
 
-namespace {company}.{product}.Repositories.{schema};
+namespace {setting.Company}.{setting.Product}.Repositories.{table.Schema};
 
-public class {repositoryName}({product}Context context) : {table.BaseTable}Repository<{product}Context>(context)
+public class {table.Table}Repository({setting.Product}Context context) : {table.BaseClass}Repository<{setting.Product}Context>(context)
 {"{"}
+    protected override IQueryable<{table.Table}Model> Query => context.{table.Table}.Select({variableName} => new {table.Table}Model
+    {"{"}
+{string.Join(",\n", mappings)}
+    {"}"});
 {"}"}
 
 """;
-
-        var directory = Path.Combine(setting.OutputPath, setting.Product, "Repositories", schema);
-        var fileName = $"{repositoryName}.cs";
-        var fileInfo = new FileInfo(Path.Combine(directory, fileName));
-        fileInfo.WriteAllText(content);
+        return new FileModel { FilePath = Path.Combine(setting.OutputPath, setting.Product, "Repositories", table.Schema, $"{table.Table}Repository.cs"), Content = content };
     }
 
-    private void GenerateControllers(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateControllers(TableModel table)
     {
-        var controllerName = table.Table + "Controller";
-        var modelName = table.Table + "Model";
-        var entityName = table.Table + "Entity";
-        var company = setting.Company;
-        var product = setting.Product;
-        var schema = table.Schema;
-
         var content = $"""
 using Zuhid.Base;
-using {company}.{product}.Models.{schema};
-using {company}.{product}.Entities.{schema};
-using {company}.{product}.Repositories.{schema};
+using {setting.Company}.{setting.Product}.Models.{table.Schema};
+using {setting.Company}.{setting.Product}.Entities.{table.Schema};
+using {setting.Company}.{setting.Product}.Repositories.{table.Schema};
+using Microsoft.AspNetCore.Mvc;
 
-namespace {company}.{product}.Controllers.{schema};
+namespace {setting.Company}.{setting.Product}.Controllers.{table.Schema};
 
-public class {controllerName}({table.Table}Repository repository) : {table.BaseTable}Controller<{product}Context, {entityName}>(repository)
+public class {table.Table}Controller({table.Table}Repository repository) : {table.BaseClass}Controller
+    <{setting.Product}Context, {table.Table}Repository, {table.Table}Entity, {table.Table}Model>(repository)
 {"{"}
     [NonAction]
     public override Task Delete(Guid id) => throw new NotImplementedException("");
 {"}"}
 
 """;
-
-        var directory = Path.Combine(setting.OutputPath, $"{setting.Product}", "Controllers", schema);
-        var fileName = $"{controllerName}.cs";
-        var fileInfo = new FileInfo(Path.Combine(directory, fileName));
-        fileInfo.WriteAllText(content);
+        return new FileModel 
+        { 
+            FilePath = Path.Combine(Path.Combine(setting.OutputPath, $"{setting.Product}", "Controllers", table.Schema), $"{table.Table}Controller.cs"),
+            Content = content
+        };
     }
 }

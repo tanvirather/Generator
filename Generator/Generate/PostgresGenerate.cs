@@ -3,41 +3,37 @@ using Zuhid.Generator.Tools;
 
 namespace Zuhid.Generator.Generate;
 
-public class PostgresGenerate(SettingModel settingModel) : IGenerate
+public class PostgresGenerate(SettingModel settingModel, IFileService fileService) : IGenerate
 {
     public void Generate()
     {
-        var tableList = CsvLoader.LoadTables(Path.Combine(settingModel.InputPath, "Table.csv"));
-        GenerateSchema(tableList);
+        var tableList = fileService.LoadTables(Path.Combine(settingModel.InputPath, "Table.csv"));
+        fileService.WriteAllText(GenerateSchema(tableList));
         foreach (var table in tableList)
         {
             var csvPathColumn = Path.Combine(settingModel.InputPath, table.Schema, $"{table.Table}.csv");
-            var columns = CsvLoader.LoadColumns(settingModel.InputPath, csvPathColumn, table.BaseSchema, table.BaseTable);
-            GenerateTable(table, columns);
-            GenerateForeignKeys(table, columns);
+            var columns = fileService.LoadColumns(settingModel.InputPath, csvPathColumn, table.BaseSchema, table.BaseTable);
+
+            fileService.WriteAllText(GenerateTable(table, columns));
+            fileService.WriteAllText(GenerateForeignKeys(table, columns));
         }
     }
 
-    /// <summary>
-    /// Generate a sql script to create schema in the Output f/Db.Postgres folder
-    /// </summary>
-    /// <param name="tableList"></param>
-    private void GenerateSchema(List<TableModel> tableList)
+    internal FileModel GenerateSchema(List<TableModel> tableList)
     {
-        var filePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "schema.sql");
-        var schemas = tableList.Select(x => x.Schema).Distinct().ToList();
-        var sql = string.Join("\n", schemas.Select(schema => $"create schema if not exists {schema.ToSnakeCase()};\n"));
-        new FileInfo(filePath).WriteAllText(sql);
+        var schemas = tableList
+            .Select(x => x.Schema)
+            .Distinct()
+            .OrderBy(x => x)
+            .Select(x => $"create schema if not exists {x.ToSnakeCase()};")
+            .ToList();
+        return new FileModel {
+            FilePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "schema.sql"),
+            Content = string.Join("\n", schemas) + "\n"
+        };
     }
 
-    private void GenerateTable(TableModel table, List<ColumnModel> columns)
-    {
-        var filePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.sql");
-        var sql = GetTableSql(table, columns);
-        new FileInfo(filePath).WriteAllText(sql);
-    }
-
-    internal string GetTableSql(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateTable(TableModel table, List<ColumnModel> columns)
     {
         var columnDefinitions = columns.Select(column =>
         {
@@ -50,17 +46,14 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
             {
                 definition += $"({column.Precision})";
             }
-
             if (column.Required)
             {
                 definition += " not null";
             }
-
             if (!string.IsNullOrWhiteSpace(column.Default))
             {
                 definition += $" default {column.Default}";
             }
-
             if (column.Unique == 1)
             {
                 definition += " unique";
@@ -68,22 +61,15 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
             return definition;
         });
 
-        var sql = $"create table if not exists {table.Schema.ToSnakeCase()}.{table.Table.ToSnakeCase()} (\n{string.Join(",\n", columnDefinitions)}\n);\n";
-        return sql;
-    }
-
-    private void GenerateForeignKeys(TableModel table, List<ColumnModel> columns)
-    {
-        var filePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.fk.sql");
-        var sql = GetForeignKeysSql(table, columns);
-
-        if (!string.IsNullOrWhiteSpace(sql))
+        var content = $"create table if not exists {table.Schema.ToSnakeCase()}.{table.Table.ToSnakeCase()} (\n{string.Join(",\n", columnDefinitions)}\n);\n";
+        return new FileModel
         {
-            new FileInfo(filePath).WriteAllText(sql);
-        }
+            FilePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.sql"),
+            Content = content
+        };
     }
 
-    internal string GetForeignKeysSql(TableModel table, List<ColumnModel> columns)
+    internal FileModel GenerateForeignKeys(TableModel table, List<ColumnModel> columns)
     {
         var fkStatements = columns
             .Where(column => !string.IsNullOrWhiteSpace(column.FkSchema) && !string.IsNullOrWhiteSpace(column.FkTable) && !string.IsNullOrWhiteSpace(column.FkColumn))
@@ -96,8 +82,12 @@ public class PostgresGenerate(SettingModel settingModel) : IGenerate
                                 $"references {column.FkSchema.ToSnakeCase()}.{column.FkTable.ToSnakeCase()}({column.FkColumn.ToSnakeCase()});";
                 return statement;
             }).ToList();
-
-        return fkStatements.Count != 0 ? string.Join("\n", fkStatements) + "\n" : string.Empty;
+        var content = fkStatements.Count != 0 ? string.Join("\n", fkStatements) + "\n" : string.Empty;
+        return new FileModel
+        {
+            FilePath = Path.Combine(settingModel.OutputPath, "Db.Postgres", "tables", table.Schema.ToSnakeCase(), $"{table.Table.ToSnakeCase()}.fk.sql"),
+            Content = content
+        };
     }
 }
 
